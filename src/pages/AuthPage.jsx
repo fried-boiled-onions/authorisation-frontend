@@ -18,7 +18,7 @@ const AuthPage = () => {
         ? { name, email, password }
         : { email, password };
 
-      const response = await axios.post(endpoint, body);
+      await axios.post(endpoint, body);
 
       if (isRegistering) {
         setIsRegistering(false);
