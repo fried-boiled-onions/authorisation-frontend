@@ -3,12 +3,11 @@ import AuthPage from "./pages/AuthPage";
 
 function App() {
   return (
-    <Router>     
-        <Routes>
-          <Route path="/" element={<AuthPage />} />
-        </Routes>
+    <Router>
+      <Routes>
+        <Route path="/" element={<AuthPage />} />
+      </Routes>
     </Router>
   );
 }
-
 export default App;

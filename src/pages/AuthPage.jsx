@@ -1,31 +1,29 @@
 import { useState } from "react";
+import { Navigate } from "react-router-dom";
 import axios from "axios";
 
 const AuthPage = () => {
-  const [isRegistering, setIsRegistering] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [isRegistering, setIsRegistering] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-
+    //setError("");
     try {
       const endpoint = isRegistering ? "/auth/register" : "/auth/login";
       const body = isRegistering
         ? { name, email, password }
         : { email, password };
 
-      await axios.post(endpoint, body);
+      const res = await axios.post(endpoint, body);
 
-      if (isRegistering) {
-        setIsRegistering(false);
-        setError("Регистрация прошла успешно!");
+      if (res) {
+        <Navigate to="http://localhost:3000" replace />;
       }
-    } catch (error) {
-      setError(error.response?.data?.message || "Произошла ошибка");
+    } catch {
+      console.error("произлошла ошибка");
     }
   };
 
@@ -71,7 +69,7 @@ const AuthPage = () => {
           />
         </div>
 
-        {error && <div className="error-message">{error}</div>}
+        {/* {error && <div className="error-message">{error}</div>} */}
 
         <button type="submit" className="button-primary">
           {isRegistering ? "Зарегистрироваться" : "Войти"}
