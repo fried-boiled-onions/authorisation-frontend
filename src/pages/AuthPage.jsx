@@ -7,6 +7,7 @@ const AuthPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,7 +21,7 @@ const AuthPage = () => {
       const res = await axios.post(endpoint, body);
 
       if (res) {
-        <Navigate to="http://localhost:3000" replace />;
+        navigate("http://localhost:3000", { replace: true });
       }
     } catch {
       console.error("произлошла ошибка");
