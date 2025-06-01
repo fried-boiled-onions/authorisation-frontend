@@ -1,12 +1,32 @@
-# React + Vite
+Project Messenger
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Этот документ описывает архитектуру фронтенда для мессенджера, построенного с использованием React, React Router, Axios и SignalR. Приложение поддерживает аутентификацию пользователей, чат в реальном времени и управление профилем пользователя. Фронтенд взаимодействует с бэкенд-API для аутентификации, получения данных пользователей и сообщений, а также использует SignalR для обмена сообщениями в реальном времени.
 
-Currently, two official plugins are available:
+Технологический стек
+•	React: Библиотека JavaScript для создания пользовательских интерфейсов.
+•	React Router: Для клиентской маршрутизации.
+•	Axios: Для выполнения HTTP-запросов к бэкенд-API.
+•	SignalR: Для коммуникации в реальном времени между клиентом и сервером.
+•	CSS: Пользовательские стили для компонентов интерфейса (определены в globals.css).
+•	Context API: Для управления глобальным состоянием аутентификации.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Структура проекта
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+frontend/
+├── public/                # Статические файлы (favicon, index.html и т.д.)
+├── src/                   # Исходный код приложения
+│   ├── components/        # UI-компоненты
+│   ├── pages/             # Компоненты страниц
+│   │   ├── AuthPage.jsx   # Страница аутентификации (вход/регистрация)
+│   │   ├── Messenger.jsx  # Страница чата
+│   │   └── Profile.jsx    # Страница профиля пользователя
+│   ├── utils/             # Утилиты и вспомогательные модули
+│   │   ├── api.js         # Функции для работы с API и SignalR
+│   │   └── AuthContext.jsx # Контекст аутентификации
+│   ├── styles/            # Стили приложения
+│   │   └── globals.css    # Глобальные стили
+│   ├── App.jsx            # Главный компонент с маршрутизацией
+│   └── main.jsx           # Точка входа приложения
+├── .gitignore             # Файлы и папки, игнорируемые Git
+├── package.json           # Зависимости и скрипты проекта
+└── README.md              # Документация проекта
