@@ -22,7 +22,7 @@ const AuthPage = ({ isRegister = false }) => {
       }
       const { token, userId } = response; // Предполагаем, что сервер возвращает userId
       login(token, username);
-      localStorage.setItem("id", userId); // Сохраняем ID пользователя
+      sessionStorage.setItem("id", userId); // Сохраняем ID пользователя
       navigate("/messenger");
     } catch (err) {
       setError(

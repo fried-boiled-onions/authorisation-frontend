@@ -4,9 +4,9 @@ import { AuthContext } from "../utils/AuthContext";
 import { disconnectSignalR } from "../utils/api";
 
 const Profile = () => {
-  const [name, setName] = useState(localStorage.getItem("name") || "");
+  const [name, setName] = useState(sessionStorage.getItem("name") || "");
   const [originalName, setOriginalName] = useState(
-    localStorage.getItem("name") || ""
+    sessionStorage.getItem("name") || ""
   );
   const [isEditing, setIsEditing] = useState(false);
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ const Profile = () => {
   const handleEditName = () => {
     if (isEditing) {
       // Сохраняем изменения
-      localStorage.setItem("name", name);
+      sessionStorage.setItem("name", name);
       setOriginalName(name); // Обновляем исходное имя
     }
     setIsEditing(!isEditing);

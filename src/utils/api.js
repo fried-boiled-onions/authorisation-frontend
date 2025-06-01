@@ -11,7 +11,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
   console.log("Token for Axios:", token);
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -26,6 +26,7 @@ export const registerUser = async (username, password) => {
 
 export const loginUser = async (username, password) => {
   const response = await api.post("/api/auth/login", { username, password });
+  console.log("Login response:", response.data);
   return response.data;
 };
 
@@ -39,14 +40,19 @@ export const getMessages = async (userId) => {
   return response.data;
 };
 
+export const markMessagesAsRead = async (senderId) => {
+  const response = await api.put(`/api/messages/mark-read/${senderId}`);
+  return response.data;
+};
+
 let connection = null;
 
 export const initSignalR = () => {
   if (connection) {
-    return connection; // Возвращаем существующее соединение
+    return connection;
   }
 
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
   console.log("Token for SignalR:", token);
   if (!token) {
     throw new Error("No token found for SignalR connection");

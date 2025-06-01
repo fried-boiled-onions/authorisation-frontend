@@ -5,7 +5,6 @@ import {
   getMessages,
   initSignalR,
   getConnection,
-  disconnectSignalR,
 } from "../utils/api";
 import "../styles/globals.css";
 import { AuthContext } from "../utils/AuthContext";
@@ -20,44 +19,111 @@ const Messenger = () => {
   const messagesEndRef = useRef(null);
   const navigate = useNavigate();
   const { logout } = useContext(AuthContext);
+  const connectionRef = useRef(null);
 
-  // Инициализация SignalR и загрузка пользователей
+  const generateMessageId = (sentAt, senderId, receiverId) => {
+    const random = Math.random().toString(36).substring(2, 8);
+    return `${sentAt}-${senderId}-${receiverId}-${random}`;
+  };
+
   useEffect(() => {
+    let mounted = true;
+
     const setupSignalR = async () => {
       try {
         console.log("Инициализация SignalR...");
         const connection = initSignalR();
+        connectionRef.current = connection;
+
         if (connection.state === "Disconnected") {
           console.log("Запуск соединения...");
           await connection.start();
-          console.log("SignalR подключен");
+          console.log("SignalR подключён");
         }
 
-        connection.on("ReceiveMessage", (response) => {
+        const handleReceiveMessage = (response) => {
+          if (!mounted) return;
+          if (!response || !response.content) {
+            console.log(
+              "Получено пустое или некорректное сообщение, игнорируем"
+            );
+            return;
+          }
           console.log("Получено сообщение:", response);
+          console.log(
+            "response.senderId:",
+            response.senderId,
+            "type:",
+            typeof response.senderId
+          );
+          console.log(
+            "sessionStorage.id:",
+            sessionStorage.getItem("id"),
+            "parsed:",
+            parseInt(sessionStorage.getItem("id")),
+            "type:",
+            typeof parseInt(sessionStorage.getItem("id"))
+          );
+          console.log(
+            "response.senderName:",
+            response.senderName,
+            "sessionStorage.name:",
+            sessionStorage.getItem("name")
+          );
 
-          // Проверяем, является ли отправитель текущим пользователем
+          const userId = parseInt(sessionStorage.getItem("id"));
+          const userName = sessionStorage.getItem("name");
           const isSenderMe =
-            response.SenderId === parseInt(localStorage.getItem("id"));
+            response.senderId === userId || response.senderName === userName;
+          console.log("isSenderMe:", isSenderMe);
 
-          const messageObj = {
-            id: Date.now(),
-            text: response.Content,
-            sender: isSenderMe ? "me" : "other",
-            senderName: localStorage.getItem("name") || "Unknown",
-            timestamp: new Date(response.SentAt).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-            status: "sent",
-          };
-          setMessages((prev) => [...prev, messageObj]);
-        });
+          const messageId = generateMessageId(
+            response.sentAt,
+            response.senderId,
+            response.receiverId
+          );
+
+          setMessages((prev) => {
+            if (prev.some((msg) => msg.id === messageId)) {
+              console.log("Сообщение уже добавлено, игнорируем");
+              return prev;
+            }
+            return [
+              ...prev,
+              {
+                id: messageId,
+                text: response.content,
+                sender: isSenderMe ? "me" : "other",
+                senderName:
+                  response.senderName ||
+                  (isSenderMe
+                    ? userName || "Unknown"
+                    : `User${response.senderId}`),
+                timestamp: new Date(response.sentAt).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+                status: isSenderMe ? "sent" : "received",
+              },
+            ];
+          });
+        };
+
+        connection.on("ReceiveMessage", handleReceiveMessage);
 
         console.log("Загрузка пользователей...");
         const users = await getUsers();
-        console.log("Пользователи загружены:", users);
-        setChats(users);
+        if (mounted) {
+          console.log("Пользователи загружены:", users);
+          setChats(users);
+        }
+
+        return () => {
+          if (connectionRef.current) {
+            connectionRef.current.off("ReceiveMessage", handleReceiveMessage);
+            console.log("Очищен обработчик");
+          }
+        };
       } catch (error) {
         console.error(
           "Ошибка инициализации SignalR или загрузки пользователей:",
@@ -65,7 +131,7 @@ const Messenger = () => {
         );
         if (
           error.response?.status === 401 ||
-          error.message.includes("No token")
+          error.message.includes("text/html")
         ) {
           navigate("/login");
         }
@@ -75,21 +141,26 @@ const Messenger = () => {
     setupSignalR();
 
     return () => {
-      // Очистка не требуется, так как соединение управляется глобально
+      mounted = false;
+      if (connectionRef.current) {
+        connectionRef.current.off("ReceiveMessage");
+        console.log("Очищено соединение SignalR");
+      }
     };
   }, [navigate]);
 
-  // Загрузка истории сообщений при выборе чата
   useEffect(() => {
     if (selectedUserId) {
       const fetchMessages = async () => {
         try {
           const messageData = await getMessages(selectedUserId);
           const formattedMessages = messageData.map((msg) => ({
-            id: msg.id,
+            id: generateMessageId(msg.sentAt, msg.senderId, msg.receiverId),
             text: msg.content,
             sender:
-              msg.senderName === localStorage.getItem("name") ? "me" : "other",
+              msg.senderName === sessionStorage.getItem("name")
+                ? "me"
+                : "other",
             senderName: msg.senderName,
             timestamp: new Date(msg.sentAt).toLocaleTimeString([], {
               hour: "2-digit",
@@ -109,7 +180,6 @@ const Messenger = () => {
     }
   }, [selectedUserId, navigate]);
 
-  // Автоскролл к последнему сообщению
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -120,13 +190,13 @@ const Messenger = () => {
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !selectedUserId) {
-      alert("Выберите пользователя и введите сообщение");
+      alert("Выберите пользователя иное сообщение");
       return;
     }
 
     const connection = getConnection();
-    if (!connection) {
-      console.error("SignalR не подключен");
+    if (!connection || connection.state !== "Connected") {
+      console.error("SignalR не подключён");
       alert("Ошибка: соединение с сервером не установлено.");
       return;
     }
@@ -138,29 +208,16 @@ const Messenger = () => {
 
     try {
       console.log("Отправка сообщения:", messageRequest);
-      console.log("Connection state:", connection.state);
-      if (connection.state !== "Connected") {
-        throw new Error("SignalR connection is not in the 'Connected' state");
-      }
       await connection.invoke("SendMessage", messageRequest);
-
-      const newMsg = {
-        id: Date.now(),
-        text: newMessage,
-        sender: "me",
-        senderName: localStorage.getItem("name") || "Unknown",
-        timestamp: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        status: "sent",
-      };
-
-      setMessages((prev) => [...prev, newMsg]);
+      console.log("Сообщение отправлено через SignalR");
       setNewMessage("");
     } catch (error) {
       console.error("Ошибка отправки сообщения:", error);
-      alert(`Не удалось отправить сообщение: ${error.message}`);
+      alert(
+        `Не удалось отправить сообщение: ${
+          error.message || "Неизвестная ошибка сервера"
+        }`
+      );
     }
   };
 
@@ -226,7 +283,7 @@ const Messenger = () => {
                     msg.sender === "me" ? "sent" : "received"
                   }`}
                 >
-                  <span className="text-sm text-slate-600">
+                  <span className="text-sm text-slate-600 font-bold">
                     {msg.senderName}
                   </span>
                   <div className="p-2 bg-gray-100 rounded-lg shadow-md">

@@ -85,8 +85,8 @@ body {
   position: relative;
   margin-bottom: 20px;
   padding: 0 10px;
-  width: 100%; /* Убедимся, что контейнер не выходит за пределы */
-  box-sizing: border-box; /* Учтем padding в ширине */
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .search-bar {
@@ -95,7 +95,7 @@ body {
   border: 1px solid #e5e5e5;
   border-radius: 20px;
   font-size: 14px;
-  box-sizing: border-box; /* Учтем padding в ширине */
+  box-sizing: border-box;
 }
 
 .clear-search {
@@ -193,6 +193,10 @@ body {
 
 .message p {
   margin: 0;
+}
+
+.message span {
+  font-weight: bold;
 }
 
 .message-meta {

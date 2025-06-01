@@ -6,21 +6,20 @@ export const AuthContext = createContext();
 // Провайдер контекста
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    // Начальное состояние: проверяем токен в localStorage
-    return localStorage.getItem("token") !== null;
+    return sessionStorage.getItem("token") !== null;
   });
 
   // Функция для входа
   const login = (token, name) => {
-    localStorage.setItem("token", token);
-    localStorage.setItem("name", name);
+    sessionStorage.setItem("token", token);
+    sessionStorage.setItem("name", name);
     setIsAuthenticated(true);
   };
 
   // Функция для выхода
   const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("name");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("name");
     setIsAuthenticated(false);
   };
 
