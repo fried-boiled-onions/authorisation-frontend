@@ -1,39 +1,99 @@
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
   margin: 0;
   padding: 0;
-  background: #f5f5f5;
+  background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+  color: #1f2a44;
 }
 
 .auth-container {
-  max-width: 400px;
-  margin: 15rem auto;
-  padding: 2rem;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-width: 450px;
+  margin: 10rem auto;
+  padding: 2.5rem;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease;
+  animation: slideUp 0.5s ease-out;
+}
+
+.auth-container:hover {
+  transform: translateY(-5px);
 }
 
 .form-group {
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.form-group label {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  color: #1f2a44;
+  font-weight: 500;
 }
 
 .input-field {
   width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  margin-top: 0.25rem;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  box-sizing: border-box;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
 .button-primary {
-  background: #2563eb;
-  color: white;
-  padding: 0.5rem 1rem;
+  background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%);
+  color: #ffffff;
+  padding: 0.75rem 1.5rem;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s ease, transform 0.2s ease;
   width: 100%;
+  font-size: 16px;
+}
+
+.button-primary:hover {
+  background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);
+  transform: scale(1.05);
+}
+
+.button-primary.cancel-btn {
+  background: linear-gradient(90deg, #6b7280 0%, #4b5563 100%);
+}
+
+.button-primary.cancel-btn:hover {
+  background: linear-gradient(90deg, #4b5563 0%, #374151 100%);
+  transform: scale(1.05);
+}
+
+.button-primary.logout-btn {
+  background: linear-gradient(90deg, #ef4444 0%, #f87171 100%);
+}
+
+.button-primary.logout-btn:hover {
+  background: linear-gradient(90deg, #dc2626 0%, #ef4444 100%);
+  transform: scale(1.05);
+}
+
+.button-primary.save-btn {
+  background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%);
+}
+
+.button-primary.save-btn:hover {
+  background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);
+  transform: scale(1.05);
 }
 
 .error-message {
@@ -45,16 +105,20 @@ body {
 .messenger {
   display: flex;
   height: 100vh;
-  background-color: #fff;
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .sidebar {
-  width: 300px;
-  background-color: #f5f5f5;
-  padding: 20px 0;
+  width: 320px;
+  background: #f8fafc;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid #e5e5e5;
+  border-right: 1px solid #e5e7eb;
+  transition: width 0.3s ease;
 }
 
 .sidebar-header {
@@ -68,17 +132,23 @@ body {
 .sidebar-header h2 {
   margin: 0;
   font-size: 20px;
-  color: #000;
+  color: #1f2a44;
 }
 
 .profile-btn {
   padding: 8px 15px;
   background: none;
-  border: 1px solid #e5e5e5;
+  border: 1px solid #e5e7eb;
   border-radius: 20px;
-  color: #000;
+  color: #1f2a44;
   font-size: 14px;
   cursor: pointer;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.profile-btn:hover {
+  background: #e5e7eb;
+  color: #3b82f6;
 }
 
 .search-container {
@@ -92,7 +162,7 @@ body {
 .search-bar {
   width: 100%;
   padding: 8px 30px 8px 15px;
-  border: 1px solid #e5e5e5;
+  border: 1px solid #e5e7eb;
   border-radius: 20px;
   font-size: 14px;
   box-sizing: border-box;
@@ -105,7 +175,7 @@ body {
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: #888;
+  color: #6b7280;
   cursor: pointer;
 }
 
@@ -117,23 +187,26 @@ body {
 }
 
 .chat-item {
-  padding: 12px 15px;
-  color: #000;
-  border-radius: 0;
+  padding: 0.75rem 1rem;
+  color: #1f2a44;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 16px;
   margin: 0;
   width: 100%;
   box-sizing: border-box;
-  transition: background-color 0.3s ease;
+  transition: background 0.3s ease, transform 0.2s ease;
 }
 
 .chat-item:hover {
-  background-color: #e5e5e5;
+  background: #e5e7eb;
+  transform: translateX(5px);
 }
 
 .chat-item.selected {
-  background-color: #e5e5e5;
+  background: #dbeafe;
+  color: #3b82f6;
+  font-weight: 600;
 }
 
 .chat-name {
@@ -148,7 +221,7 @@ body {
 
 .chat-header {
   padding: 15px;
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: 1px solid #e5e7eb;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -157,38 +230,44 @@ body {
 .chat-header h3 {
   margin: 0;
   font-size: 18px;
+  color: #1f2a44;
 }
 
 .chat-status {
   font-size: 12px;
-  color: #888;
+  color: #6b7280;
   margin-top: 5px;
 }
 
 .messages {
   flex-grow: 1;
-  padding: 20px;
+  padding: 1.5rem;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0.75rem;
+  animation: fadeIn 0.5s ease-in-out;
 }
 
 .message {
   max-width: 70%;
   padding: 10px;
-  border-radius: 10px;
+  border-radius: 12px;
   position: relative;
 }
 
 .message.sent {
-  background-color: #e5e5e5;
+  background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%);
+  color: #ffffff;
   align-self: flex-end;
+  border-radius: 12px 12px 0 12px;
 }
 
 .message.received {
-  background-color: #f5f5f5;
+  background: #e5e7eb;
+  color: #1f2a44;
   align-self: flex-start;
+  border-radius: 12px 12px 12px 0;
 }
 
 .message p {
@@ -201,7 +280,7 @@ body {
 
 .message-meta {
   font-size: 12px;
-  color: #888;
+  color: #6b7280;
   display: flex;
   gap: 5px;
   justify-content: flex-end;
@@ -209,20 +288,20 @@ body {
 }
 
 .status .read {
-  color: #007bff;
+  color: #3b82f6;
 }
 
 .message-input {
   display: flex;
   padding: 15px;
-  border-top: 1px solid #e5e5e5;
+  border-top: 1px solid #e5e7eb;
   gap: 10px;
 }
 
 .message-input input {
   flex-grow: 1;
   padding: 10px;
-  border: 1px solid #e5e5e5;
+  border: 1px solid #e5e7eb;
   border-radius: 20px;
   font-size: 14px;
 }
@@ -232,7 +311,12 @@ body {
   border: none;
   font-size: 20px;
   cursor: pointer;
-  color: #007bff;
+  color: #3b82f6;
+  transition: color 0.3s ease;
+}
+
+.message-input button:hover {
+  color: #2563eb;
 }
 
 .no-chat-message {
@@ -240,8 +324,9 @@ body {
   justify-content: center;
   align-items: center;
   height: 100%;
-  font-size: 18px;
-  color: #888;
+  font-size: 1.125rem;
+  color: #6b7280;
+  animation: pulse 1.5s infinite;
 }
 
 .profile-page {
@@ -249,77 +334,96 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #fff;
-  padding: 20px;
+  background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
 }
 
 .profile-container {
-  width: 400px;
-  padding: 20px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 450px;
+  padding: 2.5rem;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   text-align: center;
+  animation: slideUp 0.5s ease-out;
   position: relative;
 }
 
 .back-btn {
   position: absolute;
-  top: 10px;
-  left: 10px;
+  top: 1rem;
+  left: 1rem;
   background: none;
   border: none;
-  font-size: 20px;
+  font-size: 1.25rem;
   cursor: pointer;
+  color: #3b82f6;
+  transition: color 0.3s ease;
+}
+
+.back-btn:hover {
+  color: #2563eb;
 }
 
 .profile-content {
   margin-top: 40px;
+  margin-bottom: 0.75rem;
+}
+
+.profile-content .input-field {
+  margin-bottom: 0.4rem;
 }
 
 .avatar-placeholder {
-  width: 80px;
-  height: 80px;
-  background-color: #e5e5e5;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 24px;
-  margin: 0 auto 20px;
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 1.5rem;
 }
 
 .nickname-input {
   padding: 8px;
   font-size: 16px;
   width: 100%;
-  border-radius: 4px;
-  border: 1px solid #e5e5e5;
-  margin-bottom: 20px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 2rem;
 }
 
-.profile-buttons button {
-  display: block;
-  width: 100%;
-  padding: 10px;
-  margin: 10px 0;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
+.profile-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.edit-btn {
-  background-color: #000;
-  color: white;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.cancel-btn {
-  background-color: #888;
-  color: white;
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.logout-btn {
-  background-color: #ff0000;
-  color: white;
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
 }

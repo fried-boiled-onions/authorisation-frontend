@@ -20,9 +20,9 @@ const AuthPage = ({ isRegister = false }) => {
       } else {
         response = await loginUser(username, password);
       }
-      const { token, userId } = response; // Предполагаем, что сервер возвращает userId
+      const { token, userId } = response;
       login(token, username);
-      sessionStorage.setItem("id", userId); // Сохраняем ID пользователя
+      sessionStorage.setItem("id", userId);
       navigate("/messenger");
     } catch (err) {
       setError(
@@ -42,6 +42,7 @@ const AuthPage = ({ isRegister = false }) => {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              className="input-field"
               required
             />
           </div>
@@ -51,16 +52,17 @@ const AuthPage = ({ isRegister = false }) => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              className="input-field"
               required
             />
           </div>
-          {error && <p className="error">{error}</p>}
+          {error && <p className="error-message">{error}</p>}
           <button type="submit" className="button-primary">
-            {isRegister ? "Зарегистрироваться" : "Войти"}
+            {isRegister ? "Зарегистрироваться " : "Войти "}
           </button>
         </form>
         <p className="toggle-text">
-          {isRegister ? "Уже есть аккаунт?" : "Нет аккаунта?"}
+          {isRegister ? "Уже есть аккаунт? " : "Нет аккаунта? "}
           <span
             onClick={() =>
               navigate(isRegister ? "/login" : "/register", { replace: true })

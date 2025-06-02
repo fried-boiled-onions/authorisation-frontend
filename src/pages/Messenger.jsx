@@ -1,5 +1,13 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useContext,
+  useMemo,
+  useCallback,
+} from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   getUsers,
   getMessages,
@@ -16,10 +24,16 @@ const Messenger = () => {
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
   const navigate = useNavigate();
   const { logout } = useContext(AuthContext);
   const connectionRef = useRef(null);
+
+  const messageVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+  };
 
   const generateMessageId = (sentAt, senderId, receiverId) => {
     const random = Math.random().toString(36).substring(2, 8);
@@ -152,6 +166,7 @@ const Messenger = () => {
   useEffect(() => {
     if (selectedUserId) {
       const fetchMessages = async () => {
+        setIsLoading(true);
         try {
           const messageData = await getMessages(selectedUserId);
           const formattedMessages = messageData.map((msg) => ({
@@ -174,6 +189,8 @@ const Messenger = () => {
           if (error.response?.status === 401) {
             navigate("/login");
           }
+        } finally {
+          setIsLoading(false);
         }
       };
       fetchMessages();
@@ -184,13 +201,15 @@ const Messenger = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const filteredChats = chats.filter((chat) =>
-    chat.username.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredChats = useMemo(() => {
+    return chats.filter((chat) =>
+      chat.username.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [chats, searchTerm]);
 
-  const handleSendMessage = async () => {
+  const handleSendMessage = useCallback(async () => {
     if (!newMessage.trim() || !selectedUserId) {
-      alert("Выберите пользователя иное сообщение");
+      alert("Выберите пользователя и введите сообщение");
       return;
     }
 
@@ -219,7 +238,7 @@ const Messenger = () => {
         }`
       );
     }
-  };
+  }, [newMessage, selectedUserId]);
 
   const handleChatSelect = (chat) => {
     setSelectedChat(chat.username);
@@ -263,13 +282,40 @@ const Messenger = () => {
               }`}
               onClick={() => handleChatSelect(chat)}
             >
-              <span className="chat-name">{chat.username}</span>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.75rem",
+                }}
+              >
+                <div
+                  style={{
+                    width: "40px",
+                    height: "40px",
+                    borderRadius: "50%",
+                    background: "#d1d5db",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    color: "#ffffff",
+                    fontWeight: "bold",
+                  }}
+                >
+                  {chat.username[0].toUpperCase()}
+                </div>
+                <span className="chat-name">{chat.username}</span>
+              </div>
             </li>
           ))}
         </ul>
       </div>
       <div className="chat-area">
-        {selectedChat ? (
+        {isLoading ? (
+          <div className="no-chat-message">
+            <p>Загрузка сообщений...</p>
+          </div>
+        ) : selectedChat ? (
           <>
             <div className="chat-header">
               <h3>{selectedChat}</h3>
@@ -277,11 +323,14 @@ const Messenger = () => {
             </div>
             <div className="messages">
               {messages.map((msg) => (
-                <div
+                <motion.div
                   key={msg.id}
                   className={`message ${
                     msg.sender === "me" ? "sent" : "received"
                   }`}
+                  variants={messageVariants}
+                  initial="hidden"
+                  animate="visible"
                 >
                   <span className="text-sm text-slate-600 font-bold">
                     {msg.senderName}
@@ -301,7 +350,7 @@ const Messenger = () => {
                       )}
                     </div>
                   </div>
-                </div>
+                </motion.div>
               ))}
               <span ref={messagesEndRef} />
             </div>
