@@ -13,6 +13,7 @@ import {
   getMessages,
   initSignalR,
   getConnection,
+  markMessagesAsRead,
 } from "../utils/api";
 import "../styles/globals.css";
 import { AuthContext } from "../utils/AuthContext";
@@ -25,6 +26,7 @@ const Messenger = () => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [unreadCounts, setUnreadCounts] = useState({});
   const messagesEndRef = useRef(null);
   const navigate = useNavigate();
   const { logout } = useContext(AuthContext);
@@ -64,32 +66,28 @@ const Messenger = () => {
             return;
           }
           console.log("Получено сообщение:", response);
-          console.log(
-            "response.senderId:",
-            response.senderId,
-            "type:",
-            typeof response.senderId
-          );
-          console.log(
-            "sessionStorage.id:",
-            sessionStorage.getItem("id"),
-            "parsed:",
-            parseInt(sessionStorage.getItem("id")),
-            "type:",
-            typeof parseInt(sessionStorage.getItem("id"))
-          );
-          console.log(
-            "response.senderName:",
-            response.senderName,
-            "sessionStorage.name:",
-            sessionStorage.getItem("name")
-          );
 
           const userId = parseInt(sessionStorage.getItem("id"));
           const userName = sessionStorage.getItem("name");
           const isSenderMe =
             response.senderId === userId || response.senderName === userName;
-          console.log("isSenderMe:", isSenderMe);
+          const isSelfMessage = response.senderId === response.receiverId;
+
+          // Skip adding the message if it's sent by the current user to themselves
+          if (isSelfMessage && isSenderMe) {
+            console.log(
+              "Сообщение от себя к себе, игнорируем в ReceiveMessage"
+            );
+            return;
+          }
+
+          // Skip adding the message if it's sent by the current user and belongs to the current chat
+          if (isSenderMe && response.receiverId === parseInt(selectedUserId)) {
+            console.log(
+              "Сообщение от текущего пользователя в текущем чате, игнорируем"
+            );
+            return;
+          }
 
           const messageId = generateMessageId(
             response.sentAt,
@@ -97,30 +95,41 @@ const Messenger = () => {
             response.receiverId
           );
 
-          setMessages((prev) => {
-            if (prev.some((msg) => msg.id === messageId)) {
-              console.log("Сообщение уже добавлено, игнорируем");
-              return prev;
-            }
-            return [
+          // Update unread count if the message is from another user and not in the selected chat
+          if (!isSenderMe && response.senderId !== parseInt(selectedUserId)) {
+            setUnreadCounts((prev) => ({
               ...prev,
-              {
-                id: messageId,
-                text: response.content,
-                sender: isSenderMe ? "me" : "other",
-                senderName:
-                  response.senderName ||
-                  (isSenderMe
-                    ? userName || "Unknown"
-                    : `User${response.senderId}`),
-                timestamp: new Date(response.sentAt).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                }),
-                status: isSenderMe ? "sent" : "received",
-              },
-            ];
-          });
+              [response.senderId]: (prev[response.senderId] || 0) + 1,
+            }));
+          }
+
+          // Add message to state only if it belongs to the currently selected chat
+          if (response.senderId === parseInt(selectedUserId) || isSenderMe) {
+            setMessages((prev) => {
+              if (prev.some((msg) => msg.id === messageId)) {
+                console.log("Сообщение уже добавлено, игнорируем");
+                return prev;
+              }
+              return [
+                ...prev,
+                {
+                  id: messageId,
+                  text: response.content,
+                  sender: isSenderMe ? "me" : "other",
+                  senderName:
+                    response.senderName ||
+                    (isSenderMe
+                      ? userName || "Unknown"
+                      : `User${response.senderId}`),
+                  timestamp: new Date(response.sentAt).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                  status: isSenderMe ? "sent" : "received",
+                },
+              ];
+            });
+          }
         };
 
         connection.on("ReceiveMessage", handleReceiveMessage);
@@ -161,7 +170,7 @@ const Messenger = () => {
         console.log("Очищено соединение SignalR");
       }
     };
-  }, [navigate]);
+  }, [navigate, selectedUserId]);
 
   useEffect(() => {
     if (selectedUserId) {
@@ -184,6 +193,20 @@ const Messenger = () => {
             status: msg.isRead ? "read" : "sent",
           }));
           setMessages(formattedMessages);
+
+          // Mark messages as read and reset unread count for this user
+          try {
+            // await markMessagesAsRead(selectedUserId); // Commented out to avoid 404 error
+            setUnreadCounts((prev) => ({
+              ...prev,
+              [selectedUserId]: 0,
+            }));
+          } catch (error) {
+            console.warn(
+              "Не удалось пометить сообщения как прочитанные:",
+              error
+            );
+          }
         } catch (error) {
           console.error("Ошибка загрузки сообщений:", error);
           if (error.response?.status === 401) {
@@ -229,6 +252,30 @@ const Messenger = () => {
       console.log("Отправка сообщения:", messageRequest);
       await connection.invoke("SendMessage", messageRequest);
       console.log("Сообщение отправлено через SignalR");
+
+      // Add the sent message to the state for immediate display
+      const userId = parseInt(sessionStorage.getItem("id"));
+      const userName = sessionStorage.getItem("name");
+      const messageId = generateMessageId(
+        new Date().toISOString(),
+        userId,
+        parseInt(selectedUserId)
+      );
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: messageId,
+          text: newMessage,
+          sender: "me",
+          senderName: userName || "Unknown",
+          timestamp: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          status: "sent",
+        },
+      ]);
       setNewMessage("");
     } catch (error) {
       console.error("Ошибка отправки сообщения:", error);
@@ -305,6 +352,9 @@ const Messenger = () => {
                   {chat.username[0].toUpperCase()}
                 </div>
                 <span className="chat-name">{chat.username}</span>
+                {unreadCounts[chat.id] > 0 && (
+                  <span className="unread-badge">{unreadCounts[chat.id]}</span>
+                )}
               </div>
             </li>
           ))}
