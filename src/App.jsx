@@ -10,19 +10,16 @@ import Profile from "./pages/Profile";
 import { AuthProvider, AuthContext } from "./utils/AuthContext";
 import { useContext } from "react";
 
-// Компонент для маршрутов, доступных только неаутентифицированным пользователям
 const AuthRoute = ({ component, redirect }) => {
   const { isAuthenticated } = useContext(AuthContext);
   return !isAuthenticated ? component : <Navigate to={redirect} />;
 };
 
-// Компонент для маршрутов, доступных только аутентифицированным пользователям
 const PrivateRoute = ({ component, redirect }) => {
   const { isAuthenticated } = useContext(AuthContext);
   return isAuthenticated ? component : <Navigate to={redirect} />;
 };
 
-// Компонент для перенаправления по умолчанию
 const AuthRedirect = () => {
   const { isAuthenticated } = useContext(AuthContext);
   return <Navigate to={isAuthenticated ? "/messenger" : "/login"} />;

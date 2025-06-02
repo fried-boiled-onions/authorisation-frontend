@@ -73,7 +73,6 @@ const Messenger = () => {
             response.senderId === userId || response.senderName === userName;
           const isSelfMessage = response.senderId === response.receiverId;
 
-          // Skip adding the message if it's sent by the current user to themselves
           if (isSelfMessage && isSenderMe) {
             console.log(
               "Сообщение от себя к себе, игнорируем в ReceiveMessage"
@@ -81,7 +80,6 @@ const Messenger = () => {
             return;
           }
 
-          // Skip adding the message if it's sent by the current user and belongs to the current chat
           if (isSenderMe && response.receiverId === parseInt(selectedUserId)) {
             console.log(
               "Сообщение от текущего пользователя в текущем чате, игнорируем"
@@ -95,7 +93,6 @@ const Messenger = () => {
             response.receiverId
           );
 
-          // Update unread count if the message is from another user and not in the selected chat
           if (!isSenderMe && response.senderId !== parseInt(selectedUserId)) {
             setUnreadCounts((prev) => ({
               ...prev,
@@ -103,7 +100,6 @@ const Messenger = () => {
             }));
           }
 
-          // Add message to state only if it belongs to the currently selected chat
           if (response.senderId === parseInt(selectedUserId) || isSenderMe) {
             setMessages((prev) => {
               if (prev.some((msg) => msg.id === messageId)) {
@@ -194,9 +190,7 @@ const Messenger = () => {
           }));
           setMessages(formattedMessages);
 
-          // Mark messages as read and reset unread count for this user
           try {
-            // await markMessagesAsRead(selectedUserId); // Commented out to avoid 404 error
             setUnreadCounts((prev) => ({
               ...prev,
               [selectedUserId]: 0,
@@ -253,7 +247,6 @@ const Messenger = () => {
       await connection.invoke("SendMessage", messageRequest);
       console.log("Сообщение отправлено через SignalR");
 
-      // Add the sent message to the state for immediate display
       const userId = parseInt(sessionStorage.getItem("id"));
       const userName = sessionStorage.getItem("name");
       const messageId = generateMessageId(
